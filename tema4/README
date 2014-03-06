@@ -1,0 +1,82 @@
+Elemente de Grafica pe Calculator - Tema 4
+
+	Sleeping beauty
+	Dimcica Tudor 331CC
+	
+1. Cerinta
+	Se doreste implementarea unei animatii pentru fata unei fete care trece prin starile:
+somn->surprindere->enervare->somn->somn->suprindere->enervare->somn->...
+
+2. Utilizare
+	Animatia se ruleaza prin build+run in cadrul proiectului Visual Studio sau prin rularea
+executabilului in cazul in care proiectul a fost deja compilat.
+	Animatia necesita doar fisierele .obj aferente fiecarei stari si texturile pentru fata
+si particule care au fost puse la dispozitie la lansarea temei si care se afla in folderul
+resurse din radacina proiectului.
+	
+2.3 Input Tastatura
+	SPACE - Reincarca shaderele.
+	Nu am implementat nici un alt input de la tastatura.
+	
+2.4 Interfata Grafica
+	Programul prezinta animatia fetei unei fete care trece prin diferite stari. Aceasta se trezeste si se
+enerveaza in momentul in care este deranjata de un zgomot ce se identifica in scena noastra cu mai multe
+note muzicale ce zboara prin ecran. Odata disparute acestea fata se culca la loc, urmeaza o perioada de 
+somn si scena incepe de la inceput, secventa repetandu-se neintrerupt pana la inchiderea programului.
+
+3. Implementare
+
+	Pentru a putea face animatia dintre 2 stari am fost nevoit sa creez un obiect care contine atat
+pozitiile si normalele aferente primei stari cat si pozitiile si normalele aferente celei de a doua stari.
+In fisierul lab_mesh_loader.hpp mi-am creat propria metoda prin care bindez unui vertex array object toate
+cele mentionate mai sus. Metoda se numeste myLoadObj si primeste ca parametrii verticii si indicii asociati
+fiecarei stari si vao, vbo, ibo si num_indices prin care se vor scoate in afara metodei toate informatiile
+necesare legarii si afisarii obiectului cu ajutorul shaderelor. Pentru a avea tot ce este necesar animatiei 
+am trimis in plus pe pipeline catre shader pe pozitiile 3 si 4, pozitiile si normalele celei de a 2 stari. 
+	Implementarea efectiva a animatiei am realizat-o in vertex shader. Avand pe pozitiile 0 si 3 pozitiile
+vertexilor si pe pozitiile 1 si 4 normalele, am calculat valoarea interpolata a fiecareia cu ajutorul celor
+2 valori luate de pe pipeline. Interpolarea a fost facuta in functie de timp, variabila ce este primita de
+la CPU.
+	Iluminarea si texturarea le-am facut intocmai ca in laboratoarele 4 si 5.
+	Durata animatiei si trecerea dintr-o stare in alta au fost tratate in notifyDisplayFrame(). Pentru
+obtinerea timpilor am folosit functia GetTickCount() din Windows.h. Un ciclu de animatie dureaza 5s.
+Cele 4 tranzitii ce se repeta la nesfarsit sunt urmatoarele: somn->surprindere, surprindere->enervare,
+enervare->somn si somn->somn.
+
+	Pentru implementarea billboardului am folosit inca 3 shadere (vertex, geometry si fragment) destinate
+exclusiv sistemului de particule. Pentru inceput am creat un vector de puncte 3D pe care le-am incapsulat
+intr-un obiect si l-am trimis la shader cu puncte ca si primitiva de desenare. Fiecare punct ajunge prin
+pipeline pe shader alaturi de culoarea sa. Expandarea fiecarui punct sub forma de billboard se realizeaza
+in geometry shader. Punctul primit ca variabila de intrare in geometry shader il transform in coordonate
+view space prin inmultirea cu matricile de modelare si vizualizare. Acum punctul reprezinta coordonata 
+relativa la camera care acum este plasata in (0, 0, 0). Pasul urmator este calculul celor 3 vectori necesari
+reprezentarii celor 3 axe de coordonate. Fiecare punct al quadului care formeaza billboardul se obtine
+adunand valorile necesare obtinerii a 4 puncte ce formeaza un patrat pe directiile date de up si right.
+Mai departe in fragment shader se aplica textura, se da discard la pixelii albi ai texturii si apoi se 
+aplica culoarea primita de la vertex shader. Sistemul de particule este creat pe CPU. Animatia sistemului de
+particule este realizata in notifyDisplayFrame() si este sincronizata cu animatia fetei. Perioada in care
+sistemul de particule parcurge ecranul este egala cu perioada in care nu se mai afla nici o particula in
+cadru. Durata ciclurilor de animatie pentru sistemul de particule este dublul duratei ciclului de animatie a
+fetei, 10s.
+	
+
+4. Testare
+	Implementarea a fost impartita in doua. Prima parte a fost implementarea animatiei si testarea ei iar cea
+dea doua reprezinta implementarea billboardului si animarea sistemului de particule.
+
+5. Probleme aparute
+	Enuntul a fost destul de clar. Orice aspect neacoperit de enunt l-am tratat cum am considerat eu ca e
+mai bine si mai interesant.
+
+6. Continutul arhivei
+	Am introdus in arhiva solutia Visual Studio.
+	Proiectul contine toate fisierele prezente in laboratorele 4 si 5, shaderele din laboratorul 6 si fisierele
+.obj si .bmp necesare obtinerii obiectelor de animat.
+	* README -- in folderul proiectului
+	
+7. Functionalitati
+	* Functionalitati Standard:
+		- Animatie fata. Texturare corecta. Algoritm de animatie prin interpolare. Iluminare Phong.
+		- Succesiune stari: somn->surprindere->enervare->somn->somn->surprindere->...
+		- Sistem particule. Implementare prin billboards direct pe GPU. Texturare cu alpha discard.
+		- Sincronizare intre animatie si sistemul de particule.
