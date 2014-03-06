@@ -1,0 +1,180 @@
+Elemente de Grafica pe Calculator - Tema 2
+
+	Crazy Driver
+	Dimcica Tudor 331CC
+	
+1. Cerinta
+	Se doreste o implementare simplificata a unui joc de tip cursa auto cu obstacole. Exemplul principal 
+urmarit in vederea implementarii jocului este jocul Heat Rush (exemplu 1).
+
+2. Utilizare
+	Programul/Jocul se ruleaza prin build+run in cadrul proiectului Visual Studio sau prin rularea
+executabilului in cazul in care proiectul a fost deja compilat.
+	Jocul nu necesita fisiere de intrare si nici comenzi in consola.
+	
+2.3 Input Tastatura
+	Up - Accelerare
+	Left - Deplasare si rotire la stanga
+	Right - Deplasare si rotire la dreapta
+	Down - Franare
+	
+2.4 Interfata Grafica
+	Jocul nu afiseaza nici un element grafic ce poate fi folosit/activat/manevrat/apasat cu ajutorul 
+mouseului.
+	Interfata grafica a jocului prezinta doua contexte vizuale disjuncte. Primul, de mici dimensiuni, 
+situat in partea de sus a ecranului, afiseaza in centru timpul scurs si in stanga distanta ramasa, 
+scorul si numarul de vieti ramase. Al doilea context vizual, de mari dimensiuni, situat sub primul 
+context vizual, reprezinta spatiul de joc unde apar desenate masina jucatorului, obstacolele si
+landscapeul.
+
+3. Implementare
+
+	Tema a fost realizata in Visual Studio 2012 pe Windows 7. Am plecat de la scheletul laboratorului 3. 
+	Pentru rezolvarea temei am implementat 6 clase noi, una pentru masina jucatorului, 2 pentru 
+obstacole si 3 pentru obiectele din landscape. Landscapeul este format din iarba(Grass), sosea(Road),
+marcajele reprezentate prin linii continue albe ce delimiteaza benzile soselei(Line3D).
+
+	Masina a fost implementata prin clasa Car in fisierul Car.h. Masina este reprezentata de un
+paralelipiped. Constructorul primeste ca parametrii coordonatele 3D ale centrului fetei de jos a masinii 
+si coordonatele 3D ale ochiului din perspectiva caruia se aplica proiectia in planul 2D a masinii. Se
+construiesc 2 paralelipipede ca obiecte 3D ce reprezinta fillul si conturul masinii.
+	Metoda draw deseneaza masina in spatiul de joc prin adaugarea obiectelor ce o compun la contextul
+vizual si aplicarea proiectiei din perspectiva cu ochiul dat in constructor.
+	Metoda rotate roteste masina in jurul centrului sau pentru a simula efectul de virare.
+
+	Obstacolele au fost implementate prin clasele Pyramid3D si Sphere3D in fisierele de tip header cu
+aceleasi nume ca si al claselor. Constructorul fiecarei clase primeste ca argumente punctul de pe sosea
+ce reprezinta proiectia perpendiculara a centrului fiecarei figuri geometrice pe planul soselei si ochiul
+aferent fiecarui obstacol din perspectiva caruia se face proiectia in planul 2D. Constructorul sferei 
+primeste si un al treilea argument, lungimea razei. Constructorii claselor creaza obiectele ce compun
+fiecare obstacol in parte.
+	Metodele celor 2 clase sunt identice si au exact acelasi scop al implementarii in fiecare dintre ele:
+	Metoda draw deseneaza obstacolul in spatiul de joc prin adaugarea obiectelor ce il compun la contextul
+vizual, aplica o translatare pe axa OX si o proiectie din perspectiva ochiului dat prin constructor.
+Explicatia translatarii va fi data ulterior in descrierea metodei main.
+	Metoda isInBoundaries verifica daca obstacolul ami este prezent in fereastra de vizualizare.
+	Metoda collision verifica daca obstacolul a intrat in coliziune cu masina. Acest lucru se face
+verificandu-se daca vreunul dintre colturile fetei de jos/sus a masinii este in interiorul obiectelor ce 
+compun obstacolele.
+	Metoda erase sterge obiectele ce compun obstacolul din contextul vizual.
+	Metoda move translateaza obiectele pe axele OX si OZ astfel incat sa simuleze efectul de inaintare si
+deplasare laterala a masinii.
+	
+	UPDATE: Afland pe ultima suta de metri ca trebuie create atat obiecte fixe cat si mobile, a trebuit sa
+implementez si un obiect ce prezinta o viteza constanta fata de celalalte obiecte cu pozitie fixa. Am ales
+sa spawnez pe harta masini identice cu cea folosita de jucator. Am creat aceleasi metode ca si in obstacolele
+prezentate mai sus, isInBoundaries, collision, erase, move dar si o metoda suplimentara numita constantSpeed.
+Toate metodele ce sunt comune la toate obstacolele sunt folosite exact ca sus la oferirea unui input de la
+tastatura. Metoda constantSpeed translateaza masinile obstacol pe directia de inaintare a masinii jucatorului
+cu o viteza constanta data la instantierea fiecarui obstacol printr-o valoare random. Apelul acestei metode se
+realizeaza in onIdle la fiecare iteratie, nefiind necesar input de la tastatura pentru a fi apelata. De 
+asemenea am implementat si coliziunea masinilor de tip obstacol cu obstacolele fixe, distrugandu-le. Aditional, 
+masina obstacol acumuleaza puncte provenite de la obstacolele distruse, care pot fi castigate de jucator atunci
+cand acesta depaseste masina obstacol.
+	
+	In fisierele Line3D.h si Landscape.h am implementat clasele ce definesc obiectele ce compun landscapeul.
+Atat iarba, cat si linia si soseaua sunt construite ca obiecte 3D insa cu y = 0 pentru a desena si crea
+planul pe care se desfasoara cursa auto.
+	Cele 3 clase(Grass, Road si Line3D) contin toate aceleasi metode:
+	Metoda draw deseneaza obiectele in contextul vizual si aplica proiectie din perspectiva ochiului dat
+ca parametru in constructor.
+	Metoda redraw scoate si adauga la loc in contextul vizual obiectele. Aceasta metoda a fost creata pentru
+a afisa corect din punct de vedere logic suprapunerea obiectelor din spatiul de joc(de exemplu obstacolele 
+trebuie sa fie peste obiectele ce definesc soseaua, marcajele si iarba, si nu invers).
+	Metoda translate ce translateaza obiectele pe axa OX pentru a simula efectul de deplasare laterala a
+masinii.
+
+	In fisierul main.cpp se realizeaza apelul tuturor functiilor si metodelor necesarii initializarii
+jocului si a rularii sale.
+	In metoda init se initializeaza contextele vizuale, se afiseaza timpul, scorul, distanta si vietile
+ramase, se deseneaza masina jucatorului, landscapeul si se initializeaza atat punctele de respawn ale
+obstacolelor pe sosea, cat si ochii perspectivelor necesare afisarii tuturor obiectelor dintr-o perspectiva
+3D cat mai realista(ochi asociat masinii, ochi asociat liniilor de marcaj, ochi asociati fiecarei benzi de
+circulatie).
+
+	In metoda onIdle am implementat mecanismul jocului. Daca numarul de vieti este 0 jocul se termina,
+totul se opreste iar pe ecran apare textul GAME OVER!. Daca numarul de vieti este diferite de 0 si distanta
+parcursa este mai mare decat WIN_DISTANCE, jocul se termina iar pe ecran apare mesajul de victorie YOU WON!.
+	Primii pasi realizati in metoda onIdle este updatarea timpului, a distantei si a scorului.
+	Implementand input multiplu si continuu concomitent de la tastatura am tratat apasarea tastelor in 
+metoda onIdle. Pentru acest tip de implementare a tastaturii am pus in DrawingWindow.cpp headerele din glut 
+legate de tratarea evenimentelor de tip release la apasarea tastelor(glutKeyboardUpFunc si glutSpecialUpFunc). 
+Aceste 2 metode primesc fiecare ca parametru cate o functie, implementate tot in DrawingWindow.cpp sub numele 
+de  keyboardFunction2 si specialFunction2. Acestea apeleaza ambele in corpul lor metoda onKeyUp care apartine
+clasei DrawingWindow si este implementata in main.cpp. Acum avem in main.cpp atat metoda onKey cat si
+onKeyUp. Prima seteaza flagurile up, left sau right pe true in functie de tasta apasata atata timp cat aceasta
+ramane apasata iar cea de a doua seteaza flagurile up, left sau right pe false in functie de tasta careia i-a
+fost dat release. Cand o tasta este tinuta apasata, flagul aferent tastei va fi true, cand se da release la 
+tasta, flagul aferent va redeveni false. In onIdle verific cele trei flaguri (up, right, left) si pentru
+fiecare se executa miscarea dorita in cazul in care este true. 
+	Tratarea inputului de la tastatura, si implicit al miscarii masinii, se face in felul urmator:
+	La apasarea tastei stanga/dreapta, masina nu este translatata in nici o directie insa landscapeul si 
+obstacolele sunt translatate in directia opusa pentru a simula deplasarea laterala a masinii. 
+	La apasarea tastei sus, masina iarasi nu este translatata in nici o directie, ci doar obstacolele sunt
+translatate spre masina pentru a simula deplasarea inainte a masinii.
+	La apasarea tastei jos, se pune frana brusca, adica se opreste translatarea obstacolelor.
+	La neapasarea nici unei taste, in cazul in care viteza masinii este diferita de 0, aceasta scade, odata
+cu ea incetinind si translatarea obstacolelor catre masina, creand astfel efectul de deccelerare a masinii.
+	Deplasarea laterala a masinii/landscapeului se face  in masura in care masina se afla in limitele soselei.
+Odata ce masina a atins una dintre margini, inputul de la tastatura care ar trebui sa arunce masina dupa acea
+margine este ignorat.
+	Deplasarea inainte se face cu acceleratie. Cu cat se tine mai mult apasat pe tasta inainte viteza masinii
+creste pana la limita data de MAX_SPEED. Odata ajunsa la MAX_SPEED, viteza ramane constanta cat timp este
+tinuta apasata tasta inainte.
+	Odata cu translatarea pe axa OX a obiectelor din landscape si a obstacolelor, se translateaza si ochii
+de perspectiva asociati celor 3 benzi. Am realizat acest lucru pentru ca obstacolele sa ramana incadrate realist
+in banda lor. Pentru a realiza translatarea unor puncte solo, am definit metoda applyTransform_p in Transform3D
+ce are ca argumente 2 pointeri catre Point3D si care aplica transformarile pe un singur punct. Implementarea
+acestei metode a fost realizata prin combinarea celor doua metode applyTransform deja existente.
+	In momentul in care nici una dintre tastele stanga/dreapta nu este apasata se realizeaza rotatia de 
+revenire a masinii la orientarea initiala.
+
+	Dupa tratarea inputului de la tastatura se trateaza actiunile obstacolelor.
+	Mai intai se verifica daca s-a produs coliziunea vreunui obstacol cu masina. Daca da, se scad puncte
+de la scor, se updateaza scorul, scade numarul de vieti si obstacolul este distrus, sters si eliminat din
+vectorul ce contine obstacolele prezente pe sosea la un moment de timp. Daca nu, se verifica daca obstacolul 
+mai este in fereastra de vizualizare. Daca nu, se sterge din contextul vizual, se distruge si se elimina din
+vectorul ce contine obstacolele prezente pe sosea la un moment de timp. Daca el este inca prezent in fereastra
+de vizualizare chiar si cu o mica bucatica din el, nu se va face nimic asupra acelui obstacol.
+	Apoi se verifica daca sunt de adaugat obstacole pe sosea. Daca da, se deseneaza un obiect de tip random
+(sfera sau piramida) pe o banda de circulatie random. Dupa aceea se obtine random distanta pe sosea ce 
+trebuie parcursa pana la generarea random a urmatorului obstacol. Mentionez faptul ca primul obstacol se 
+genereaza dupa parcurgerea unei scurte distante in care masina este singura pe sosea. La momentul generarii
+se da o valoare random variabilei nextObj ce reprezinta distanta pe care o va parcurge masina pana la 
+urmatoarea generare a unui nou obstacol. Variabila nextObj scade cu numarul de unitati parcurse de masina iar
+urmatorul obstacol va fi generat cand nextObj devine negativ.
+
+	
+4. Testare
+	Implementarea a fost facuta pas cu pas, testand fiecare element nou implementat inainte de a trece mai 
+departe. Succesiunea implementarilor este urmatoarea: desenare landscape si masina, implementare miscare
+landscape si rotire masina pentru a crea efectul de deplasare laterala a masinii, desenare obstacole, 
+implementare miscare a obstacolelor la apasarea tastelor astfel incat sa simuleze efectul de inaintare al 
+masinii, implementare coliziuni obstacole cu masina, generare de obstacole random, updatare scor, timp,
+distanta, numar vieti ramase si terminarea jocului fie la epuizarea vietilor, fie la parcurgerea distantei
+necesare castigarii cursei. 
+
+5. Probleme aparute
+	Enuntul a fost destul de clar. Orice aspect neacoperit de enunt l-am tratat cum am considerat eu ca e
+mai bine si mai interesant.
+
+6. Continutul arhivei
+	Am introdus in arhiva solutia Visual Studio.
+	In Framework am pus toate fisierele necesare desenarii elementelor grafice, luat din laboratorul 3. De
+asemenea am  inclus cinci fisiere create de mine:
+	* Landscape.h -- Fisierul in care s-au facut implementarile obiectelor ce alcatuiesc landscapeul.
+	* Line3D.h -- Fisierul in care este implementata linia ca obiect 3D.
+	* Pyramid3D.h -- Fisierul ce contine implementarea obstacolului de tip piramida.
+	* Sphere3D.h -- Fisierul ce contine implementarea obstacolului de tip sfera.
+	* Car.h -- Fisierul ce contine implementarea masinii jucatorului.
+	In folderul lab2 se gaseste sursa main.cpp ce contine metoda main necesarii rularii proiectului.
+	* README -- in folderul proiectului
+	
+7. Functionalitati
+	* Functionalitati Standard:
+		- Miscare masina(deplasare laterala cu rotire(tastele stanga/dreapta) ,efectul de accelerare si 
+	franare (tastele inainte/inapoi) si efectul de deccelerare (cand viteza e != 0 si nu e apasata nici o 
+	tasta))
+		- 2 tipuri de obstacole (sfera si piramida) + coliziuni aferente si plasare obstacolelor pe sosea.
+		- Afisare timp, scor, distanta ramasa de parcurs si numar vieti ramase.
+		- Afisare mesaj de victorie sau game over.
