@@ -1,0 +1,156 @@
+Elemente de Grafica pe Calculator - Tema 3
+
+	Cursa Atletism
+	Dimcica Tudor 331CC
+	
+1. Cerinta
+	Se doreste implementarea unei curse de atletism. Scena este de tip 3D implementata cu OpenGL.	
+
+2. Utilizare
+	Programul/Jocul se ruleaza prin build+run in cadrul proiectului Visual Studio sau prin rularea
+executabilului in cazul in care proiectul a fost deja compilat.
+	Jocul necesita un fisier de intrare cu vitezele jucatorilor. Ordinea in care sunt puse vitezele
+in fisier este urmatoarea: viteza jucatorului controlat, viteza oponentului 1, viteza oponentului 2.
+	
+2.3 Input Tastatura
+	Up 		- Miscare inainte
+	Left 	- Rotire la stanga
+	Right 	- Rotire la dreapta
+	Down 	- Miscare inapoi
+	w		- Deplasare camera FPS inainte	
+	a		- Deplasare camera FPS la stanga
+	s		- Deplasare camera FPS inapoi
+	d		- Deplasare camera FPS la dreapta
+	r		- Deplasare camera FPS in sus
+	f		- Deplasare camera FPS in jos
+	q		- Rotire camera FPS pe axa OY
+	e		- Rotire camera FPS pe axa OY invers
+	z		- Rotire camera FPS pe axa OZ
+	c		- Rotire camera FPS pe axa OZ invers
+	t		- Rotire camera FPS pe axa OX
+	g		- Rotire camera FPS pe axa OX invers
+	o		- Activeaza si seteaza camera FPS deasupra stadionului.
+	h		- Activeaza camera TPS ce urmareste jucatorul din exteriorul stadionului.
+	j		- Activeaza camera FPS a jucatorului controlat de la tastatura.
+	k		- Activeaza camera FPS a oponentului 1.
+	l		- Activeaza camera FPS a oponentului 2.
+	y		- Incepe jocul/pune pauza jocului.
+	
+2.4 Interfata Grafica
+	Jocul nu afiseaza nici un element grafic ce poate fi folosit/activat/manevrat/apasat cu ajutorul 
+mouseului.
+	Scena 3D se prezinta in felul urmator. La inceperea jocului apare o pista de atletism pe care sunt
+prezenti 3 atleti in bloc-start. In exteriorul pistei la inaltime se afla camera TPS ce va urmarii 
+jucatorul controlat de la tastatura pe toata durata cursei. La sfarsitul cursei, pista de atletism
+dispare aparand in locul ei un steag fluturand de culoarea atletului ce a castigat cursa.
+	Jucatorul controlat de la tastatura se afla pe culoarul de mijloc si are culoarea albastru deschis.
+Culorile oponentilor sunt verde si galben.
+
+3. Implementare
+
+	Tema a fost realizata in Visual Studio 2012 pe Windows 7. Am plecat de la scheletul laboratorului 3
+de shadere. Pentru rezolvarea temei am implementat camerele din laboratorul mai sus mentionat si inca 4
+clase noi, una pentru pista, una pentru steaguri, una pentru jucatori si una pentru camera TPS.
+
+	Steagul a fost implementat prin clasa Flag in headerul Flag.hpp. Aceasta construieste in constructor 
+obiectul steag ce se compune dintr-un bat negru din 6 puncte, si 6 x 10 puncte ce formeaza panza steagului. 
+Culoarea steagului este data prin parametru. Steagul este construit de la 0 folosind VAO, VBO si IBO. Clasa 
+mai contine o metoda de redesenare a obiectului si un destructor.
+
+	Camera TPS a fost implementata prin clasa TPS in headerul TPS.hpp. Aceasta construieste in constructor 
+camera TPS ce va urmarii jucatorul principal. Camera TPS este reprezentata de un cilindru cu bazele colorate 
+in degradee rosu spre alb si fata laterala rosie. Clasa mai contine o metoda de redesenare a obiectului si 
+un destructor.
+
+	Pista de atletism a fost implementata prin clasa Track in headerul Track.hpp. Aceasta construieste in 
+constructor obiectul ce desemneaza pista de atletism ca doua semicercuri unite printr-un dreptunghi. Raza
+semicercurilor este data prin parametru iar lungimea dreptunghiului este calculata pe baza proportiei dintre
+raza si lungimea liniei drepte a unei piste de atletism adevarate de dimensiune oficiala (raportul este de 
+2.312). Culoarele sunt delimitate prin construirea unor benzi albe delimitatoare subtiri relativ la
+dimensiunea intregii piste. Linia de sosire este o dunga alba perpendiculara pe culoare pe una dintre liniile
+drepte. Clasa mai contine o metoda de redesenare si un destructor.
+
+	Jucatorii au fost implementati prin clasa Player din headerul Player.hpp. Constructorul clasei incarca
+mesa obiectului ce reprezinta jucatorii de la locatia specificata prin parametru cu ajutorul metodelor din 
+headerul lab_mesh_loader.hpp. Fiecare jucator are asociata o matrice model_matrix care se calculeaza prin 
+inmultirea matricilor specifice fiecarei transformari, translate_matrix, rotate_matrix si scale_matrix. Clasa
+impacheteaza 4 vectori de 3 elemente in care salvam pozitia jucatorului, pozitia camerei FPS, pozitia camerei
+TPS si culoarea jucatorului si un float in care tinem minte unghiul de directie al jucatorului(dir_angle).
+Metoda rotate modifica unghiul de orientare si matricea rotate_matrix conform rotatiei aplicate de utilizator
+sau de miscarea automata. Metoda translate are 2 overloaduri, una plaseaza jucatorul la un punct 3D dat, 
+cealalta deplaeaza jucatorul distance unitati pe directia indicata de dir_angle. Aceste metode updateaza si
+pozitia camerelor FPS si TPS. Camera TPS este tot timpul in exteriorul stadionului si urmareste tot timpul
+jucatorul. Pe linia dreapta aceasta este plasata pe aceleasi coordonate y si z cu ale jucatorului dar cu
+coordonata x schimbata astfel incat sa fie in afara pistei. Pe semicercuri camera este mentinuta la o distanta
+constanta de centrul cercului prin calcularea unghiului format de jucator cu dreapta care face 0 grade si apoi
+plasarea camerei coliniar pe dreapta formata de jucator si centrul semicercului, la o distanta in de ajuns de
+mare pentru a o scoate din stadion. Metoda victory returneaza true/false in concordanta cu indeplinirea
+conditiei de victorie. In metoda translate variabila booleana halfLap devine true in momentul trecerii de
+mijlocul celei de a doua linii drepte. Pentru a indeplinii conditia de victorie, variabila halfLap trebuie sa
+fie true, jucatorul trebuie sa fie in jumatatea de pista din care a inceput(pos.x > 0) si sa depaseasca 
+coordonata z a liniei de sosire. Metoda activateFPSCam calculeaza punctul unde priveste camera si seteaza ca 
+activa camera FPS. Metoda activateTPSCam realizeaza aceleasi lucruri ca si metoda anterioara numai ca 
+activeaza camera TPS. Metoda automaticMovement realizeaza miscarea automata a jucatorului. Pe liniile drepte 
+metoda nu modifica decat coordonata z a pozitiei jucatorului. In semicercuri metoda determina directia de
+deplasare si distanta ce trebuie parcursa astfel incat jucatorul sa ramana in interiorul culoarului sau(altfel
+spus, sa se roteasca in jurul centrului semicercului in care acesta se afla). Metoda updateaza de asemenea si
+pozitia camerelor FPS si TPS(updatarea pozitiei camerei TPS a fost realizata cu scopul de a testa 
+corectitudinea determinarii pozitiei camerei TPS). Metoda draw calculeaza matricea model_matrix pe care o
+trimite la shader si realizeaza redesenarea jucatorului. Clasa mai contine si un destructor.
+	Implementarea propriu-zisa a jocului s-a facut in fisierul main.cpp. Constructorul clasei Laborator
+initializeaza variabilele necesare jocului, obiectele scenei 3D, seteaza camera initiala si citeste valorile
+vitezelor jucatorilor. Implementarea tastaturii s-a realizat in metodele: notidyKeyPressed,
+notifySpecialKeyPressed si notifySpecialKeyReleased. Descrierea tastelor s-a realizat mai sus. Tastele
+asociate camerelor si inceperii jocului au fost implementate in notidyKeyPressed, nefiind nevoie de
+implementarea unui comportament de tip continuu pentru aceste taste. Tastele de deplasare au fost implementate
+in celalalte 2 metode. Fiecare tasta are cate un flag asociat de tip boolean ce are valoarea true cat timp
+tasta este tinuta apasata altfel fiind false. 
+	In metoda notifyDisplayFrame se realizeaza implementarea gameplayului jocului. La inceperea jocului
+variabila start este 0 astfel incat jocul nu va incepe decat dupa apasarea tastei 'y'. Pentru fiecare tasta
+speciala, UP/DOWN/LEFT/RIGHT, se verifica daca este apasata si daca da se realizeaza miscarea corespunzatoare.
+De asemenea se verifica daca conditia de victorie a fost indeplinita pentru toti cei 3 jucatori si daca nu s-a
+terminat inca cursa se apeleaza metodele de deplasare automata a oponentilor. In cazul in care se indeplineste
+conditia de victorie a unui jucator, variabila victory devine 1. In cazul cand variabila victory este 0, se
+deseneaza toate obiectele necesare realizarii cursei de atletism. In cazul in care variabila victory este 1,
+obiectele pomenite anterior nu mai sunt desenate(dispare intreaga scena 3D cu pista de ateltism) si pe ecran
+este desenat steagul de culoarea atletului invingator. La fiecare rulare a metodei notifyDisplayFrame se
+initializeaza variabila millis cu metoda getTickCount(), scopul acesteia fiind de a furniza un ceas ce va fi 
+trimis catre vertex shader. Necesitatea acestui ceas se explica prin nevoia de a realiza efectul de fluturare 
+a steagului. Variabila millis este trimisa prin parametru metodei draw a steagului ce reprezinta castigatorul. 
+Din interiorul metodei draw aceasta este trimisa catre shader. Pentru obtinerea efectului de fluturare am 
+modificat coordonatele x si y ale pozitiei vertexilor calculate in interiorul shaderului. Functia dupa care 
+se modifica coordonatele este o sinusoidala aplicata pe ceas(variabila count din shader) si coordonatele x si 
+y a vertexului prelucrat. In notifyDisplayFrame variabila millis este trimisa prin parametru dupa ce este 
+impartita la o valoare foarte mare, procedeu prin care rezulta un ceas mai lent si o fluturare mai lenta.
+	Metoda main este nemodificata fata de cea din laborator, aceasta continand initalizarile glew-ului, 
+instantierea clasei Laborator si pornirea jocului.
+
+4. Testare
+	Implementarea a fost facuta pas cu pas, testand fiecare element nou implementat inainte de a trece mai 
+departe.
+
+5. Probleme aparute
+	Enuntul a fost destul de clar. Orice aspect neacoperit de enunt l-am tratat cum am considerat eu ca e
+mai bine si mai interesant.
+
+6. Continutul arhivei
+	Am introdus in arhiva solutia Visual Studio.
+	Proiectul contine toate fisierele prezente in laborator la care se adauga fisierele proprii in care s-a
+realizat implementarea elmentelor jocului:
+	* Flag.hpp
+	* Track.hpp
+	* Player.hpp
+	* TPS.hpp
+	* Basemesh.obj -- in folderul resurse, acesta este obiectul folosit pentru intruchiparea jucatorilor.
+	* README -- in folderul proiectului
+	
+7. Functionalitati
+	* Functionalitati Standard:
+		- Deplasare inainte/inapoi, rotire stanga/dreapta a atletului controlat de jucatorul uman.
+		- Toate tipurile de camere specificate: camera FPS pentru fiecare atlet, camera TPS pentru atletul
+	jucatorului uman, spider cam-ul FPS de deasupra stadionului ce realizeaza doar miscarile specificate.
+		- Conditiile unei curse de atletism. Jucatorii pleaca diferentiat ca si pozitie din bloc-start.
+	Necesitatea alergarii unei ture de pista pentru a castiga jocul. Vitezele jucatorilor date prin fisier.
+	Fiecare jucator are o culoare diferita.
+		- Aparitia steagului care flutura in vant dupa terminarea cursei colorat in culoarea atletului ce a
+	castigat cursa.
