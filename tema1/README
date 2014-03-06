@@ -1,0 +1,156 @@
+Elemente de Grafica pe Calculator - Tema 1
+
+	Geometry Wars
+	Dimcica Tudor 331CC
+	
+1. Cerinta
+	Se doreste realizarea unui joc de tipul Geometry Wars. Jucatorul va fi reprezentat de o nava 
+spatiala in forma de cerc cu un poligon in interiorul sau. Nava va avea ca arma un burghiu activabil
+si dezactivabil. Scopul jocului este distrugerea inamicilor din spatiul de joc pentru obtinerea unui
+punctaj cat mai mare. Inamicii sunt obiecte realizate prin structuri geometrice complexe ce apar si se
+misca in spatiul de joc pe directii random. Jucatorul incepe cu un numar fix de vieti si pierde cate o
+viata la fiecare atingere a corpului navei(exceptand burghiul) cu un inamic. Jocul se termina cand 
+jucatorul nu mai are nici o viata.
+
+2. Utilizare
+	Programul/Jocul se ruleaza prin build+run in cadrul proiectului Visual Studio sau prin rularea
+executabilului in cazul in care proiectul a fost deja compilat.
+	Jocul nu necesita fisiere de intrare si nici comenzi in consola.
+	
+2.3 Input Tastatura
+	Up - Deplasare inainte
+	Left - Rotire la stanga pe loc a navei
+	Right - Rotire la dreapta pe loc a navei
+	Space - Activare/Dezactivare burghiu 
+	Esc - Iesire din joc
+	
+2.4 Interfata Grafica
+	Jocul nu afiseaza nici un element grafic ce poate fi folosit/activat/manevrat/apasat cu ajutorul 
+mouseului.
+	Interfata grafica a jocului prezinta doua contexte vizuale disjuncte. Primul, de mici dimensiuni, 
+situat in partea de sus a ecranului, afiseaza in centru scorul obtinut in joc si in dreapta, desenate,
+vietile ramase. Al doilea context vizual, de mari dimensiuni, situat sub primul context vizual, 
+reprezinta spatiul de joc unde apar desenate nava jucatorului si inamicii. 
+
+3. Implementare
+
+	Tema a fost realizata in Visual Studio 2012 pe Windows 7. Am plecat de la scheletul laboratorului 2. 
+	Pentru rezolvarea temei am implementat 4 clase noi, una pentru nava jucatorului si 3 pentru 
+inamici(cate una pentru fiecare tip de inamic). 
+	Nava a fost implementata prin clasa Ship in fisierul Ship.h. 
+	Constructorul primeste ca parametrii coordonatele centrului navei si raza cercului sau. In 
+interiorul constructorului se initializeaza obiectele ce formeaza nava (cercul, poligonul si burghiul), 
+variabilele ce reprezinta locatia navei in spatiul de joc, marimi asociate navei (unghiul de 
+rotire/deplasare, raza navei) si starea burghiului.
+	Metoda toggleDrill activeaza/dezactiveaza burghiul afisandu-l sau stergandu-l din contextul vizual.
+	Metoda drawShip deseneaza nava pe spatiul de joc (prin adaugarea obiectelor ce o formeaza la 
+contextul vizual).
+	Metoda rotate primeste ca parametru un string ("left" sau "right) si un unghi de rotatie exprimat
+in radiani si modifica corespunzator unghiul navei salvat in variabila shipAngle ce desemneaza directia
+de deplasare. Unghiul initial al navei l-am considerat 0 si l-am modificat corespunzator sensului
+trigonometric. Rotatia elementelor ce apartin navei se face in jurul centrului cercului navei. Pentru
+aceasta am implementat metoda Transform2D::rotateAroundPoint ce primeste ca parametrii punctul in jurul
+carui se realizeaza rotatia si unghiul de rotatie.
+	Metoda moveForward translateaza nava in directia desemenata de unghiul salvat in shipAngle. Unghiului
+de 0 grade ii corespunde miscarea navei pe orizontala in spre dreapta. Numarul de unitati/pixeli cu care
+este deplasat nava pe fiecare axa este calculat cu ajutorul functiilor trigonometrice cos(pe axa OX) si
+sin(pe axa OY) aplicat pe unghiul navei.
+	Metoda collision, supraincarcata de 3 ori, verifica daca s-a produs coliziunea cu unul dintre cele 3
+tipuri de inamici. Prima data se verifica daca inamicul este situat in vecinatatea navei(adica in
+interioriul cercului cu centrul in centrul cercului navei si raza egala cu distanta de la centrul navei
+si pana la varful burghiului). Daca inamicul se afla in vecinatatea navei se verifica daca inamicul a
+fost atins de catre burghiul navei in cazul in care acesta este activat astfel: se iau 3 puncte de pe 
+fiecare latura a burghiului si varful acestuia si se verifica daca vreunul dintre puncte este situat
+in cercul ce delimiteaza corpurile inamicilor. Daca da metoda returneaza valoarea 2. Daca nu s-a produs
+coliziune cu burghiul se verifica daca s-a produs coliziune cu corpul navei. Se calculeaza distanta de la
+centrul navei la centrul inamicului advers si se verifica daca este mai mare sau mai mica decat suma
+dintre raza navei jucatorului si raza cercului ce delimiteaza corpul inamicului. Daca s-a produs o astfel
+de coliziune metoda returneaza valoarea 1. Daca nu se produce nici un fel de coliziune metoda returneaza
+valoarea 0.
+	Inamicii au fost implementati prin clasele Enemy1, Enemy2 si Enemy3 in fisierul Enemies.h.
+	Constructorul fiecarei clase primeste ca parametru centrul corpului fiecarui inamic. In interiorul
+fiecarui constructor se initializeaza elementele geometrice ce formeaza corpul fiecarui inamic. De 
+asemenea se initializeaza si variabilele ce contin coordonatele inamicilor in spatiul de joc, numarul de 
+puncte primit pentru distrugerea fiecarui tip de inamic, unghiul initial de deplasare si raza cercului ce
+delimiteaza corpul inamicului.
+	Metoda draw deseneaza inamicii in spatiul de joc (prin adaugarea obiectelor la contextul vizual).
+	Metoda erase sterge inamicii din spatiul de joc (prin scoaterea elementelor ce ii compun din
+contextul vizual).
+	Metoda rotateAnimation realizeaza animatia fiecarui inamic prin aplicari de rotatii intregului obiect
+sau fiecarui element geometric ce compun inamicul.
+	Metoda rotate realizeaza rotatia orientarii inamicului si implicit modificarea directiei de deplasare.
+	Metoda moveForward realizeaza deplasarea inamicilor pe acelasi principii ca si deplasarea navei. In
+aceasta metoda este tratata si coliziunea inamicilor cu marginile spatiul de joc, efectul obtinut fiind
+cel de reflexie.
+
+	In fisierul main.cpp se realizeaza apelul tuturor functiilor si metodelor necesarii initializarii
+jocului.
+	In metoda init se initializeaza contextele vizuale, se afiseaza textul scorului, se deseneaza vietile
+cu care se incepe jocul, se deseneaza nava jucatorului in punctul de start si inamicii cu care se incepe
+jocul. De asemenea se initializeaza intr-un vector de puncte 2D cele 4 locuri in care vor aparea inamici
+noi.
+	In metoda onIdle am implementat mecanismul jocului. Daca numarul de vieti este 0 jocul se termina,
+totul se opreste iar pe ecran apare textul Game Over!. Daca numarul de vieti este diferite de 0, jocul
+continua. Pentru un gameplay cat mai bun am facut o implementare a inputului de la tastatura astfel incat
+apasand doua taste in acelasi timp (de exemplu de rotatie si de deplasare inainte) sa se realizeze ambele
+miscari in acelasi timp. Pentru aceasta am pus in DrawingWindow.cpp headerele din glut legate de tratearea
+evenimentelor de tip release la apasarea tastelor(glutKeyboardUpFunc si glutSpecialUpFunc). Aceste 2 metode
+primesc fiecare ca parametru cate o functie, implementate tot in DrawingWindow.cpp sub numele de 
+keyboardFunction2 si specialFunction2. Acestea apeleaza ambele in corpul lor metoda onKeyUp care apartine
+clasei DrawingWindow si este implementata in main.cpp. Acum avem in main.cpp atat metoda onKey cat si
+onKeyUp. Prima seteaza flagurile up, left sau right pe true in functie de tasta apasata atata timp cat aceasta
+ramane apasata iar cea de a doua seteaza flagurile up, left sau right pe false in functie de tasta careia i-a
+fost dat release. Cand o tasta este tinuta apasata, flagul aferent tastei va fi true, cand se da release la 
+tasta, flagul aferent va redeveni false. In onIdle verific cele trei flaguri (up, right, left) si pentru
+fiecare se executa miscarea dorita in cazul in care este true. 
+	Dupa tratarea inputul keyboardului urmeaza tratarea inamicilor. Am creat 3 vectori, cate unul pentru
+fiecare tip de inamic unde sunt stocate toate instantele active ale inamicilor prezenti la un moment timp in 
+spatiul de joc. Iterez prin fiecare dintre ei, realizez animatia, deplasarea si apoi verific coliziunile cu
+nava jucatorului. In functie de fiecare tip de impact, updatez scorul si sterg daca e cazul inamicii. Am
+implementat 2 tipuri de coliziuni. In ambele tipuri de colizini inamicul dispare. Primul tip este reprezentat
+de coliziunea inamicului cu burghiul navei, caz in care jucatorul primeste punctele aferente inamicului
+distrus. Al doilea tip este reprezentat de coliziunea inamicului cu corpul navei, caz in car jucatorul nu 
+primeste nici un punct. Dupa tratarea inamicilor am creat un algoritm simplist de generarea a inamicilor pe 
+baza numarului de apeluri ale metodei onIdle. Exista un contor care se incrementeaza la fiecare apelare a
+metodei si cand ajunge la o anumita valoare se genereaza un nou inamic de tip si locatie random iar contorul
+se reinitializeaza cu 0. Durata initiala pentru aparitia primului inamic este de 600 de iteratii, apoi dupa 
+fiecare inamic nou aparut durata scade cu cate 100 de iteratii. Cand se ajunge la 100 de iteratii urmatorul
+inamic va aparea dupa 50 de iteratii iar de aici durata ramane constanta, 50 de iteratii. Tipul inamicului ce
+va aparea pe ecran este random, locatia de respawn este random din cele 4 pozitii initializate la inceput iar
+dupa ce acesta este desenat pe ecran se adauga la vectorul aferent tipului de inamic creat.
+
+4. Testare
+	Testarea propriu-zisa a fost reprezentata de jucarea jocului. Implementarea a fost facuta pas cu pas,
+testand fiecare element nou implementat inainte de a trece mai departe. Am inceput prin a crea nava si a ii
+implementa miscarile dorite. Apoi am creat inamicii, le-am implementat deplasarea si animatia. Apoi am
+implementat coliziunile, tipurile de coliziuni, aparitia altor instante de inamici, updatarea scorului si a
+vietilor, inputul continuu al tastaturii si terminarea jocului la pierderea vietilor.
+
+5. Probleme aparute
+	Enuntul a fost destul de clar. Orice aspect neacoperit de enunt l-am tratat cum am considerat eu ca e
+mai bine si mai interesant.
+	Am intampinat o singura problema, si anume implementarea initiala a apasarii tastelor ce nu permitea
+decat un singur tip de miscare la un moment dat de timp (fie rotatie, fie deplasare). Problema a fost
+rezolvata iar implementarea apasarii mai multor taste care actioneaza concomitent a fost descrisa in 
+amanunt mai sus.
+
+6. Continutul arhivei
+	Am introdus in arhiva solutia Visual Studio.
+	In Framework am pus toate fisierele necesare desenarii elementelor grafice, luat din laboratorul 2. De
+asemenea am  inclus doua fisiere create de mine:
+	* Enemies.h -- Fisierul in care sunt implementate clasele aferente inamicilor
+	* Ship.h -- Fisierul in care este implementata nava jucatorului
+	In folderul lab2 se gaseste sursa main.cpp ce contine metoda main necesarii rularii proiectului.
+	* README -- in folderul proiectului
+	
+7. Functionalitati
+	* Functionalitati Standard:
+		- Miscare nava (rotatie + deplasare inainte)
+		- Arma activabila si dezactivabila (viteza navei scade la activare si creste la dezactivare)
+		- 3 tipuri de inamici ce se deplaseaza in spatiul de joc pe directii random si ofera punctaje
+		diferite in cazul distrugerii lor.
+		- Afisare scorului centrat in partea de sus a ecranului si a vietilor in dreapta-sus.
+	* Functionalitati Bonus:
+		- Dificultatea jocului creste cu trecerea timpului. Inamicii apar din ce in ce mai repede.
+	* Functionalitati Suplimentare:
+		- Se pot apasa mai multe taste in acelasi timp
